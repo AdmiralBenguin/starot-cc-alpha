@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Download, Upload } from 'lucide-react';
 import { jsPDF } from 'jspdf';
+import { Download, Upload } from 'lucide-react';
 import { STATS, SPECIES, BASIC_CAREERS, UPSTART_SKILLS, CAREER_SKILLS, STARTING_EQUIPMENT } from './starot-types';
 
 interface ExportButtonsProps {
@@ -10,6 +9,13 @@ interface ExportButtonsProps {
   onImport: (character: any) => void;
 }
 
+interface PDFLayout {
+  pageWidth: number;
+  pageHeight: number;
+  margin: number;
+  boxPadding: number;
+  columnWidth: number;
+}
 const getEquipmentDetails = (itemId: string) => {
   for (const category of Object.values(STARTING_EQUIPMENT)) {
     const item = category.find(i => i.id === itemId);
@@ -18,125 +24,156 @@ const getEquipmentDetails = (itemId: string) => {
   return null;
 };
 
-const drawBox = (pdf: jsPDF, x: number, y: number, width: number, height: number, title?: string) => {
+const drawBox = (
+  pdf: jsPDF, 
+  x: number, 
+  y: number, 
+  width: number, 
+  height: number, 
+  title?: string,
+  layout: PDFLayout
+) => {
+  // Draw box outline
   pdf.rect(x, y, width, height);
+  
   if (title) {
+    // Add title background
+    pdf.setFillColor(240, 240, 240);
+    pdf.rect(x, y, width, 8, 'F');
+    
+    // Add title text
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(12);
-    pdf.text(title, x + 3, y + 6);
+    pdf.text(title, x + layout.boxPadding, y + 6);
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(10);
   }
 };
 
-const addSkillSection = (pdf: jsPDF, skills: any[], title: string, startY: number, margin: number, pageWidth: number) => {
-  let currentY = startY;
-  const boxPadding = 3;
-
-  drawBox(pdf, margin, currentY, pageWidth - 2 * margin, 5 + skills.length * 20, title);
-  currentY += 10;
-
-  skills.forEach(skill => {
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(`• ${skill.name} (${skill.type})`, margin + boxPadding, currentY);
-    currentY += 5;
-    
-    pdf.setFont('helvetica', 'normal');
-    const description = pdf.splitTextToSize(skill.description, pageWidth - 2 * (margin + boxPadding) - 10);
-    description.forEach((line: string) => {
-      pdf.text(line, margin + boxPadding + 10, currentY);
-      currentY += 5;
-    });
-
-    if (skill.actionPoints) {
-      pdf.text(`AP Cost: ${skill.actionPoints}`, margin + boxPadding + 10, currentY);
-      currentY += 5;
-    }
-
-    if (skill.stats) {
-      pdf.text(`Uses: ${skill.stats.join(' + ')}`, margin + boxPadding + 10, currentY);
-      currentY += 5;
-    }
-
-    currentY += 2;
+const drawStatsColumn = (
+  pdf: jsPDF,
+  stats: typeof STATS,
+  title: string,
+  x: number,
+  y: number,
+  character: any,
+  layout: PDFLayout
+) => {
+  const columnHeight = 40;
+  drawBox(pdf, x, y, layout.columnWidth, columnHeight, title, layout);
+  
+  let currentY = y + 15;
+  stats.forEach(stat => {
+    const value = character.stats[stat.id] || 0;
+    const text = `${stat.name}: ${value}`;
+    pdf.text(text, x + layout.boxPadding, currentY);
+    currentY += 7;
   });
 
-  return currentY;
+  return y + columnHeight;
 };
 
-const exportToPDF = (character: any) => {
-  const pdf = new jsPDF({
-    unit: 'mm',
-    format: 'a4'
+const formatSkillText = (
+  pdf: jsPDF,
+  skill: any,
+  character: any,
+  x: number,
+  y: number,
+  layout: PDFLayout
+) => {
+  const lineHeight = 5;
+  let currentY = y;
+
+  // Skill name and type
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(`• ${skill.name} (${skill.type})`, x, currentY);
+  currentY += lineHeight;
+  pdf.setFont('helvetica', 'normal');
+
+  // Description with word wrap
+  const maxWidth = layout.pageWidth - (2 * layout.margin) - (2 * layout.boxPadding) - 10;
+  const lines = pdf.splitTextToSize(skill.description, maxWidth);
+  lines.forEach(line => {
+    pdf.text(line, x + 10, currentY);
+    currentY += lineHeight;
   });
 
-  const pageWidth = 210; // A4 width
-  const pageHeight = 297; // A4 height
-  const margin = 10;
-  const boxPadding = 3;
+  // Action Points
+  if (skill.actionPoints) {
+    pdf.text(`AP Cost: ${skill.actionPoints}`, x + 10, currentY);
+    currentY += lineHeight;
+  }
+
+  // Stats and skill value
+  if (skill.stats) {
+    const value = skill.stats.reduce((sum, statId) => sum + (character.stats[statId] || 0), 0);
+    pdf.text(`Uses: ${skill.stats.join(' + ')}`, x + 10, currentY);
+    currentY += lineHeight;
+    pdf.text(`Skill Value: ${value}`, x + 10, currentY);
+    currentY += lineHeight;
+  }
+
+  return currentY + 2;
+};
+const exportToPDF = (character: any) => {
+  const pdf = new jsPDF();
+  
+  const layout: PDFLayout = {
+    pageWidth: 210,
+    pageHeight: 297,
+    margin: 15,
+    boxPadding: 5,
+    columnWidth: 60
+  };
+
+  let currentY = layout.margin;
 
   // Title
   pdf.setFontSize(16);
   pdf.setFont('helvetica', 'bold');
-  pdf.text('STAROT CHARACTER SHEET', margin, margin + 10);
+  pdf.text('STAROT CHARACTER SHEET', layout.margin, currentY);
+  currentY += 10;
 
-  let currentY = margin + 20;
+  // Basic Information
+  const basicInfoHeight = 30;
+  drawBox(pdf, layout.margin, currentY, layout.pageWidth - (2 * layout.margin), basicInfoHeight, 'BASIC INFORMATION', layout);
+  currentY += 12;
 
-  // Basic Info Box
-  drawBox(pdf, margin, currentY, pageWidth - 2 * margin, 25, 'BASIC INFORMATION');
-  pdf.setFontSize(10);
-  pdf.setFont('helvetica', 'normal');
   const species = SPECIES.find(s => s.id === character.species);
   const career = BASIC_CAREERS.find(c => c.id === character.career);
   
-  currentY += 10;
-  pdf.text([
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'normal');
+  
+  [
     `Name: ${character.name}`,
     `Species: ${species?.name}${character.isNewsoul ? ' (Newsoul)' : ''}`,
     `Career: ${career?.name || 'Upstart'}`
-  ], margin + boxPadding, currentY);
+  ].forEach(line => {
+    pdf.text(line, layout.margin + layout.boxPadding, currentY);
+    currentY += 6;
+  });
 
-  currentY += 20;
+  currentY += 5;
 
-  // Stats & Attributes Box
-  const columnWidth = (pageWidth - 2 * margin - boxPadding) / 3;
-  
-  // Physical Stats
-  drawBox(pdf, margin, currentY, columnWidth, 40, 'PHYSICAL');
+  // Stats Columns
+  const physicalStats = STATS.filter(s => s.category === 'Physical');
+  const mentalStats = STATS.filter(s => s.category === 'Mental');
+  const socialStats = STATS.filter(s => s.category === 'Social');
+
+  currentY = drawStatsColumn(pdf, physicalStats, 'PHYSICAL', layout.margin, currentY, character, layout);
+  drawStatsColumn(pdf, mentalStats, 'MENTAL', 
+    layout.margin + layout.columnWidth + 5, currentY - 40, character, layout);
+  drawStatsColumn(pdf, socialStats, 'SOCIAL', 
+    layout.margin + (2 * (layout.columnWidth + 5)), currentY - 40, character, layout);
+
   currentY += 10;
-  STATS.filter(s => s.category === 'Physical').forEach(stat => {
-    pdf.text(`${stat.name}: ${character.stats[stat.id] || 0}`, margin + boxPadding, currentY);
-    currentY += 5;
-  });
 
-  // Mental Stats
-  currentY -= 15;
-  drawBox(pdf, margin + columnWidth + boxPadding, currentY, columnWidth, 40, 'MENTAL');
-  STATS.filter(s => s.category === 'Mental').forEach(stat => {
-    pdf.text(
-      `${stat.name}: ${character.stats[stat.id] || 0}`, 
-      margin + columnWidth + boxPadding * 2, 
-      currentY + 10
-    );
-    currentY += 5;
-  });
+  // Attributes
+  const attributesHeight = 20;
+  drawBox(pdf, layout.margin, currentY, layout.pageWidth - (2 * layout.margin), attributesHeight, 'ATTRIBUTES', layout);
+  currentY += 12;
 
-  // Social Stats
-  currentY -= 15;
-  drawBox(pdf, margin + 2 * (columnWidth + boxPadding), currentY, columnWidth, 40, 'SOCIAL');
-  STATS.filter(s => s.category === 'Social').forEach(stat => {
-    pdf.text(
-      `${stat.name}: ${character.stats[stat.id] || 0}`, 
-      margin + 2 * columnWidth + boxPadding * 3, 
-      currentY + 10
-    );
-    currentY += 5;
-  });
-
-  currentY += 20;
-
-  // Derived Attributes Box
-  drawBox(pdf, margin, currentY, pageWidth - 2 * margin, 20, 'ATTRIBUTES');
   const attributes = {
     'HP': character.stats.pr || 0,
     'SP': character.stats.mr || 0,
@@ -144,67 +181,92 @@ const exportToPDF = (character: any) => {
     'WP': 3
   };
 
-  currentY += 10;
-  let attrX = margin + boxPadding;
+  let attributeX = layout.margin + layout.boxPadding;
   Object.entries(attributes).forEach(([key, value]) => {
-    pdf.text(`${key}: ${value}`, attrX, currentY);
-    attrX += 45;
+    pdf.text(`${key}: ${value}`, attributeX, currentY);
+    attributeX += 45;
   });
 
   currentY += 15;
 
-  // Equipment Box
-  drawBox(pdf, margin, currentY, pageWidth - 2 * margin, 35, 'EQUIPMENT');
-  currentY += 10;
+  // Equipment
+  const equipmentHeight = 35;
+  drawBox(pdf, layout.margin, currentY, layout.pageWidth - (2 * layout.margin), equipmentHeight, 'EQUIPMENT', layout);
+  currentY += 12;
+
   character.equipment.forEach(itemId => {
     const item = getEquipmentDetails(itemId);
     if (item) {
       pdf.setFont('helvetica', 'bold');
-      pdf.text(`• ${item.name}`, margin + boxPadding, currentY);
+      pdf.text(`• ${item.name}`, layout.margin + layout.boxPadding, currentY);
       pdf.setFont('helvetica', 'normal');
       currentY += 5;
-      pdf.text(`  ${item.description}`, margin + boxPadding, currentY);
+      pdf.text(item.description, layout.margin + layout.boxPadding + 10, currentY);
       currentY += 7;
     }
   });
 
   currentY += 5;
 
-  // Common Skills Box (Attack, Evade, etc.)
+  // Common Skills
   const commonSkillIds = ['attack', 'evade', 'endure', 'reposition'];
   const commonSkills = UPSTART_SKILLS.filter(skill => commonSkillIds.includes(skill.id));
   const otherSkills = UPSTART_SKILLS.filter(skill => !commonSkillIds.includes(skill.id));
 
-  currentY = addSkillSection(pdf, commonSkills, 'COMMON ACTIONS', currentY, margin, pageWidth);
+  // Common Skills Box
+  const commonSkillsHeight = commonSkills.length * 20 + 10;
+  drawBox(pdf, layout.margin, currentY, layout.pageWidth - (2 * layout.margin), commonSkillsHeight, 'COMMON ACTIONS', layout);
+  currentY += 12;
+
+  commonSkills.forEach(skill => {
+    currentY = formatSkillText(pdf, skill, character, layout.margin + layout.boxPadding, currentY, layout);
+  });
+
   currentY += 5;
 
-  // Other Skills
-  if (currentY > pageHeight - 50) {
+  // Other Skills - Check if we need a new page
+  if (currentY > layout.pageHeight - 50) {
     pdf.addPage();
-    currentY = margin;
+    currentY = layout.margin;
   }
-  
-  currentY = addSkillSection(pdf, otherSkills, 'OTHER SKILLS', currentY, margin, pageWidth);
 
-  // Career Skills if any
-  if (character.career !== 'upstart' && career?.skills) {
-    if (currentY > pageHeight - 50) {
+  // Other Skills Box
+  const otherSkillsHeight = otherSkills.length * 20 + 10;
+  drawBox(pdf, layout.margin, currentY, layout.pageWidth - (2 * layout.margin), otherSkillsHeight, 'OTHER SKILLS', layout);
+  currentY += 12;
+
+  otherSkills.forEach(skill => {
+    currentY = formatSkillText(pdf, skill, character, layout.margin + layout.boxPadding, currentY, layout);
+    if (currentY > layout.pageHeight - 20) {
       pdf.addPage();
-      currentY = margin;
+      currentY = layout.margin;
     }
-    
+  });
+
+  // Career Skills - if any
+  if (character.career !== 'upstart' && career?.skills) {
+    if (currentY > layout.pageHeight - 50) {
+      pdf.addPage();
+      currentY = layout.margin;
+    }
+
     const careerSkills = career.skills
       .map(skillId => CAREER_SKILLS[skillId])
       .filter(Boolean);
-    
-    currentY = addSkillSection(pdf, careerSkills, `${career.name.toUpperCase()} SKILLS`, currentY, margin, pageWidth);
+
+    const careerSkillsHeight = careerSkills.length * 20 + 10;
+    drawBox(pdf, layout.margin, currentY, layout.pageWidth - (2 * layout.margin), careerSkillsHeight, 
+      `${career.name.toUpperCase()} SKILLS`, layout);
+    currentY += 12;
+
+    careerSkills.forEach(skill => {
+      currentY = formatSkillText(pdf, skill, character, layout.margin + layout.boxPadding, currentY, layout);
+    });
   }
 
-  // Save the PDF
   const filename = `${character.name.replace(/\s+/g, '_')}_character_sheet.pdf`;
   pdf.save(filename);
 };
-
 const ExportButtons: React.FC<ExportButtonsProps> = ({ character, onImport }) => {
   const handleExport = () => {
     exportToPDF(character);
