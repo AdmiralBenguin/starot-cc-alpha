@@ -1,9 +1,11 @@
 'use client';
 
+export type SkillType = 'manoeuvre' | 'ability' | 'passive';
+
 export interface Skill {
   id: string;
   name: string;
-  type: 'manoeuvre' | 'ability' | 'passive';
+  type: SkillType;
   actionPoints?: number;
   description: string;
   stats?: string[];
@@ -117,7 +119,7 @@ export const BASIC_CAREERS = [
   }
 ];
 
-export const UPSTART_SKILLS = [
+export const UPSTART_SKILLS: Skill[] = [
   {
     id: 'attack',
     name: 'Attack',
