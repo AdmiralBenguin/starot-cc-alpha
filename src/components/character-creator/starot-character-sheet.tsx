@@ -19,11 +19,16 @@ interface CharacterSheetProps {
   updateCharacter?: (character: Character) => void;
 }
 
+// Update AttributeSectionProps to match the structure
 interface AttributeSectionProps {
   character: {
     stats: {
       [key: string]: number;
     };
+    levelUpStats?: Array<{
+      stat: string;
+      increase: number;
+    }>;
   };
 }
 
@@ -50,23 +55,40 @@ const AttributeSection: React.FC<AttributeSectionProps> = ({ character }) => {
   );
 };
 
-const StatsSection: React.FC<AttributeSectionProps> = ({ character }) => (
+interface StatsSectionProps {
+  character: {
+    stats: {
+      [key: string]: number;
+    };
+    levelUpStats?: Array<{
+      stat: string;
+      increase: number;
+    }>;
+  };
+}
+
+const StatsSection: React.FC<StatsSectionProps> = ({ character }) => (
   <Card className="p-4">
     <h2 className="font-bold mb-2">Stats</h2>
     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-      {STATS.map(stat => (
-        <div key={stat.id} className="flex justify-between">
-          <span className="font-medium">{stat.name}: </span>
-          <span>
-            {character.stats[stat.id] || 0}
-            {character.levelUpStats?.find(s => s.stat === stat.id) && (
-              <span className="text-green-600 ml-1">
-                (+{character.levelUpStats.find(s => s.stat === stat.id)?.increase})
-              </span>
-            )}
-          </span>
-        </div>
-      ))}
+      {STATS.map(stat => {
+        const baseValue = character.stats[stat.id] || 0;
+        const levelUp = character.levelUpStats?.find(s => s.stat === stat.id);
+
+        return (
+          <div key={stat.id} className="flex justify-between">
+            <span className="font-medium">{stat.name}: </span>
+            <span>
+              {baseValue}
+              {levelUp && (
+                <span className="text-green-600 ml-1">
+                  (+{levelUp.increase})
+                </span>
+              )}
+            </span>
+          </div>
+        );
+      })}
     </div>
   </Card>
 );
@@ -154,6 +176,10 @@ const SkillDisplay: React.FC<SkillDisplayProps> = ({ skill, character }) => {
     </div>
   );
 };
+
+interface SkillsSectionProps {
+  character: Character;
+}
 
 const SkillsSection: React.FC<{ character: Character }> = ({ character }) => {
   const career = BASIC_CAREERS.find(c => c.id === character.career);
