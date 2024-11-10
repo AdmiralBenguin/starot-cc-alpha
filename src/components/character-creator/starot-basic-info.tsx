@@ -1,14 +1,14 @@
 'use client';
 
 import React from 'react';
-import { SPECIES } from './starot-types';
+import { SPECIES, type Character } from './starot-types';
 
 interface BasicInfoStepProps {
   character: Character;
   updateCharacter: (key: keyof Character, value: any) => void;
 }
 
-const BasicInfoStep = ({ character, updateCharacter }) => {
+const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ character, updateCharacter }) => {
   return (
     <div className="space-y-4">
       <div>
