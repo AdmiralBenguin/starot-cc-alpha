@@ -11,6 +11,12 @@ export interface Skill {
   stats?: string[];
 }
 
+export interface Equipment {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export interface Character {
   name: string;
   species: string;
@@ -24,8 +30,18 @@ export interface Character {
   levelUpStats?: Array<{
     stat: string;
     increase: number;
-    id?: string;  // Optional id field
   }>;
+}
+
+export interface Career {
+  id: string;
+  name: string;
+  requirements: string[];
+  description: string;
+  requiresWeapon?: boolean;
+  requiresArmor?: boolean;
+  requiresNewsoul?: boolean;
+  skills?: string[];
 }
 
 export const STATS = [

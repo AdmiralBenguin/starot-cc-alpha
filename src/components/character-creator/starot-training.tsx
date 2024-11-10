@@ -2,7 +2,11 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { TRAINING, BASIC_CAREERS } from './starot-types';
+import { 
+  TRAINING,
+  BASIC_CAREERS,
+  type Character 
+} from './starot-types';
 
 interface TrainingStepProps {
   character: {

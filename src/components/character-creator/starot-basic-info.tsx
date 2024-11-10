@@ -1,7 +1,10 @@
 'use client';
 
 import React from 'react';
-import { SPECIES, type Character } from './starot-types';
+import { 
+  SPECIES,
+  type Character 
+} from './starot-types';
 
 interface BasicInfoStepProps {
   character: Character;

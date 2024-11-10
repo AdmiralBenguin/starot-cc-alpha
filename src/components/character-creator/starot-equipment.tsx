@@ -3,7 +3,11 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { InfoIcon } from 'lucide-react';
-import { STARTING_EQUIPMENT, BASIC_CAREERS } from './starot-types';
+import { 
+  STARTING_EQUIPMENT,
+  BASIC_CAREERS,
+  type Character 
+} from './starot-types';
 
 interface EquipmentStepProps {
   character: {

@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { STATS } from './starot-types';
+import { 
+  STATS,
+  type Character 
+} from './starot-types';
 
 const StatBox = ({ value, index, onClick, isSelected }) => (
   <div

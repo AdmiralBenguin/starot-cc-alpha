@@ -2,7 +2,15 @@
 
 import { jsPDF } from 'jspdf';
 import { Download, Upload } from 'lucide-react';
-import { STATS, SPECIES, BASIC_CAREERS, UPSTART_SKILLS, CAREER_SKILLS, STARTING_EQUIPMENT } from './starot-types';
+import { 
+  STATS,
+  SPECIES,
+  BASIC_CAREERS,
+  UPSTART_SKILLS,
+  CAREER_SKILLS,
+  STARTING_EQUIPMENT,
+  type Character 
+} from './starot-types';
 
 interface ExportButtonsProps {
   character: any;

@@ -8,7 +8,9 @@ import {
   SPECIES, 
   BASIC_CAREERS, 
   UPSTART_SKILLS, 
-  CAREER_SKILLS, 
+  CAREER_SKILLS,
+  STARTING_EQUIPMENT,
+  TRAINING,
   type Character 
 } from './starot-types';
 
@@ -84,12 +86,12 @@ const EquipmentSection: React.FC<{ character: { equipment: string[] } }> = ({ ch
       <div className="space-y-2">
         {character.equipment.map(itemId => {
           const item = getEquipmentDetails(itemId);
-          return (
+          return item ? (
             <div key={itemId} className="flex justify-between items-start">
-              <span className="font-medium">{item?.name}</span>
-              <span className="text-sm text-gray-600">{item?.description}</span>
+              <span className="font-medium">{item.name}</span>
+              <span className="text-sm text-gray-600">{item.description}</span>
             </div>
-          );
+          ) : null;
         })}
       </div>
     </Card>

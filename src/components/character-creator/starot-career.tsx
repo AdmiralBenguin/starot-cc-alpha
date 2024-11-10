@@ -5,9 +5,9 @@ import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { 
-  BASIC_CAREERS, 
-  UPSTART_SKILLS, 
-  STATS, 
+  BASIC_CAREERS,
+  UPSTART_SKILLS,
+  STATS,
   CAREER_SKILLS,
   STARTING_EQUIPMENT,
   type Skill,
