@@ -5,17 +5,10 @@ import { Card } from '@/components/ui/card';
 import { 
   TRAINING,
   BASIC_CAREERS,
-  type Character 
+  StepProps
 } from './starot-types';
 
-interface TrainingStepProps {
-  character: {
-    training: string;
-  };
-  updateCharacter: (field: string, value: any) => void;
-}
-
-const TrainingStep: React.FC<TrainingStepProps> = ({ character, updateCharacter }) => {
+const TrainingStep: React.FC<StepProps> = ({ character, updateCharacter }) => {
   const getCareerRequirements = (trainingId: string) => {
     return BASIC_CAREERS.filter(career => 
       career.requirements.includes(trainingId)

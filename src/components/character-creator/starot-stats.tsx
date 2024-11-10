@@ -1,12 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  STATS,
-  type Character 
-} from './starot-types';
+import { STATS, StepProps } from './starot-types';
 
-const StatBox = ({ value, index, onClick, isSelected }) => (
+interface StatBoxProps {
+  value: number;
+  index: number;
+  onClick: (value: number, index: number) => void;
+  isSelected: boolean;
+}
+
+const StatBox: React.FC<StatBoxProps> = ({ value, index, onClick, isSelected }) => (
   <div
     onClick={() => onClick(value, index)}
     className={`
@@ -25,7 +29,17 @@ const StatBox = ({ value, index, onClick, isSelected }) => (
   </div>
 );
 
-const StatSlot = ({ stat, assignedValue, onSelect, isActive }) => (
+interface StatSlotProps {
+  stat: {
+    id: string;
+    name: string;
+  };
+  assignedValue?: number;
+  onSelect: () => void;
+  isActive: boolean;
+}
+
+const StatSlot: React.FC<StatSlotProps> = ({ stat, assignedValue, onSelect, isActive }) => (
   <div 
     className={`
       border p-4 rounded-lg
@@ -58,12 +72,12 @@ const StatSlot = ({ stat, assignedValue, onSelect, isActive }) => (
   </div>
 );
 
-const StatsStep = ({ character, updateCharacter }) => {
+const StatsStep: React.FC<StepProps> = ({ character, updateCharacter }) => {
   const standardArray = [5, 5, 5, 7, 7, 7, 8, 8, 8];
   const [usingStandardArray, setUsingStandardArray] = useState(true);
   const [availableStats, setAvailableStats] = useState([...standardArray]);
-  const [rolledStats, setRolledStats] = useState([]);
-  const [selectedStatIndex, setSelectedStatIndex] = useState(null);
+  const [rolledStats, setRolledStats] = useState<number[]>([]);
+  const [selectedStatIndex, setSelectedStatIndex] = useState<number | null>(null);
 
   const rollStats = () => {
     const rolls = [];
@@ -79,11 +93,11 @@ const StatsStep = ({ character, updateCharacter }) => {
     updateCharacter('stats', {});
   };
 
-  const handleStatBoxClick = (value, index) => {
+  const handleStatBoxClick = (value: number, index: number) => {
     setSelectedStatIndex(selectedStatIndex === index ? null : index);
   };
 
-  const handleStatSlotClick = (statId) => {
+  const handleStatSlotClick = (statId: string) => {
     if (selectedStatIndex === null) {
       // If we're clicking a slot with a value, make that value available
       if (character.stats[statId]) {
@@ -172,6 +186,7 @@ const StatsStep = ({ character, updateCharacter }) => {
             stat={stat}
             assignedValue={character.stats[stat.id]}
             onSelect={() => handleStatSlotClick(stat.id)}
+            isActive={selectedStatIndex !== null}
           />
         ))}
       </div>

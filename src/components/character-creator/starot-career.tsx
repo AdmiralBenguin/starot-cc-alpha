@@ -12,13 +12,9 @@ import {
   STARTING_EQUIPMENT,
   type Skill,
   type SkillType,
-  type Character 
+  type Character,
+  StepProps 
 } from './starot-types';
-
-interface CareerStepProps {
-  character: Character;
-  updateCharacter: (field: keyof Character, value: any) => void;
-}
 
 interface SkillCardProps {
   skill: Skill;
@@ -80,11 +76,13 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, character }) => {
   );
 };
 
-const SkillsDisplay: React.FC<{ character: Character; additionalSkills?: string[] }> = ({ 
-  character, 
-  additionalSkills = [] 
-}) => {
-  const [filterType, setFilterType] = useState('all');
+interface SkillsDisplayProps {
+  character: Character;
+  additionalSkills?: string[];
+}
+
+const SkillsDisplay: React.FC<SkillsDisplayProps> = ({ character, additionalSkills = [] }) => {
+  const [filterType, setFilterType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   const allSkills = [
@@ -141,7 +139,7 @@ const SkillsDisplay: React.FC<{ character: Character; additionalSkills?: string[
   );
 };
 
-const CareerStep: React.FC<CareerStepProps> = ({ character, updateCharacter }) => {
+const CareerStep: React.FC<StepProps> = ({ character, updateCharacter }) => {
   const [showCareerSelection, setShowCareerSelection] = useState(false);
   const [selectedCareer, setSelectedCareer] = useState<typeof BASIC_CAREERS[0] | null>(null);
   const [statIncreases, setStatIncreases] = useState<{

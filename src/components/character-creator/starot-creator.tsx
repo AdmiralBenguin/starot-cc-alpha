@@ -8,22 +8,7 @@ import EquipmentStep from './starot-equipment';
 import TrainingStep from './starot-training';
 import CareerStep from './starot-career';
 import CharacterSheet from './starot-character-sheet';
-
-interface Character {
-  name: string;
-  species: string;
-  isNewsoul: boolean;
-  stats: {
-    [key: string]: number;
-  };
-  equipment: string[];
-  training: string;
-  career: string;
-  levelUpStats: Array<{
-    stat: string;
-    increase: number;
-  }>;
-}
+import { Character, StepProps } from './starot-types';
 
 const CharacterCreator: React.FC = () => {
   const [step, setStep] = useState(0);
@@ -38,7 +23,7 @@ const CharacterCreator: React.FC = () => {
     levelUpStats: []
   });
 
-  const updateCharacter = (field: keyof Character, value: any) => {
+  const updateCharacter: StepProps['updateCharacter'] = (field, value) => {
     setCharacter(prev => ({ ...prev, [field]: value }));
   };
 
@@ -144,7 +129,6 @@ const CharacterCreator: React.FC = () => {
         ) : (
           <button
             onClick={() => {
-              // Handle character completion/export
               console.log('Character completed:', character);
             }}
             className="flex items-center px-4 py-2 border rounded bg-green-600 text-white"

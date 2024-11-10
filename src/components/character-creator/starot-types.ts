@@ -44,6 +44,12 @@ export interface Career {
   skills?: string[];
 }
 
+export type StepProps = {
+  character: Character;
+  updateCharacter: (field: keyof Character, value: any) => void;
+};
+
+// Constants
 export const STATS = [
   { id: 'ps', name: 'Physical Strength', category: 'Physical' },
   { id: 'pa', name: 'Physical Agility', category: 'Physical' },
@@ -54,7 +60,7 @@ export const STATS = [
   { id: 'ss', name: 'Social Strength', category: 'Social' },
   { id: 'sa', name: 'Social Agility', category: 'Social' },
   { id: 'sr', name: 'Social Resilience', category: 'Social' }
-];
+] as const;
 
 export const SPECIES = [
   { id: 'terran', name: 'Terran', description: 'Human-looking, Vary in Height' },
@@ -65,7 +71,7 @@ export const SPECIES = [
   { id: 'wurefon', name: 'Wurefon', description: 'Anthropomorphised Axolotls' },
   { id: 'qutalon', name: 'Qutalon', description: 'Hard Shells, Eyes protrude from head on stalks' },
   { id: 'werolon', name: 'Werolon', description: 'Scales, Shark-like in appearance' }
-];
+] as const;
 
 export const STARTING_EQUIPMENT = {
   weapons: [
@@ -86,16 +92,16 @@ export const STARTING_EQUIPMENT = {
     { id: 'interface-multitool', name: 'Interface Multitool', description: 'Career Prerequisite' },
     { id: 'medical-kit', name: 'Medical Kit', description: 'Career Prerequisite' }
   ]
-};
+} as const;
 
 export const TRAINING = [
   { id: 'medic', name: 'Basic Medic Training' },
   { id: 'operator', name: 'Basic Operator Training' },
   { id: 'pilot', name: 'Basic Pilot Training' },
   { id: 'soldier', name: 'Basic Soldier Training' }
-];
+] as const;
 
-export const BASIC_CAREERS = [
+export const BASIC_CAREERS: Array<Career> = [
   { 
     id: 'medic',
     name: 'Medic',
@@ -136,7 +142,7 @@ export const BASIC_CAREERS = [
   }
 ];
 
-export const UPSTART_SKILLS: Skill[] = [
+export const UPSTART_SKILLS: Array<Skill> = [
   {
     id: 'attack',
     name: 'Attack',
@@ -144,6 +150,7 @@ export const UPSTART_SKILLS: Skill[] = [
     actionPoints: 1,
     description: 'Attempt to damage a target using a weapon in your inventory.'
   },
+
   {
     id: 'convince',
     name: 'Convince',
@@ -248,28 +255,7 @@ export const UPSTART_SKILLS: Skill[] = [
     description: 'Attempt to jump, flip, climb, land or related act.',
     stats: ['pa']
   }
-];
-
-export type Character = {
-  name: string;
-  species: string;
-  isNewsoul: boolean;
-  stats: {
-    [key: string]: number;
-  };
-  equipment: string[];
-  training: string;
-  career: string;
-  levelUpStats: Array<{
-    stat: string;
-    increase: number;
-  }>;
-};
-
-export type StepProps = {
-  character: Character;
-  updateCharacter: (field: keyof Character, value: any) => void;
-};
+] as const;
 
 export const CAREER_SKILLS: Record<string, Skill> = {
   resuscitate: {
@@ -350,4 +336,4 @@ export const CAREER_SKILLS: Record<string, Skill> = {
     description: 'Attempt to deny an aspect of reality.',
     stats: ['ma', 'mr']
   }
-};
+}as const;
