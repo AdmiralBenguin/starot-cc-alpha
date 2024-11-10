@@ -16,10 +16,41 @@ import {
 
 interface CharacterSheetProps {
   character: Character;
-  updateCharacter?: (field: keyof Character, value: any) => void;
+  updateCharacter?: (character: Character) => void;
 }
 
-const StatsSection: React.FC<{ character: Character }> = ({ character }) => (
+interface AttributeSectionProps {
+  character: {
+    stats: {
+      [key: string]: number;
+    };
+  };
+}
+
+const AttributeSection: React.FC<AttributeSectionProps> = ({ character }) => {
+  const attributes = {
+    HP: character.stats.pr || 0,
+    SP: character.stats.mr || 0,
+    EVASION: (character.stats.ps || 0) + (character.stats.pa || 0),
+    WP: 3
+  };
+
+  return (
+    <Card className="p-4">
+      <h2 className="font-bold mb-2">Attributes</h2>
+      <div className="grid grid-cols-2 gap-2">
+        {Object.entries(attributes).map(([key, value]) => (
+          <div key={key}>
+            <span className="font-medium">{key}: </span>
+            {value}
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+};
+
+const StatsSection: React.FC<AttributeSectionProps> = ({ character }) => (
   <Card className="p-4">
     <h2 className="font-bold mb-2">Stats</h2>
     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -39,37 +70,6 @@ const StatsSection: React.FC<{ character: Character }> = ({ character }) => (
     </div>
   </Card>
 );
-
-interface AttributeSectionProps {
-  character: {
-    stats: {
-      [key: string]: number;
-    };
-  };
-}
-
-const AttributeSection: React.FC<AttributeSectionProps> = ({ character }) => {
-  const attributes = {
-    hp: character.stats.pr || 0,
-    sp: character.stats.mr || 0,
-    evasion: (character.stats.ps || 0) + (character.stats.pa || 0),
-    wp: 3
-  };
-
-  return (
-    <Card className="p-4">
-      <h2 className="font-bold mb-2">Attributes</h2>
-      <div className="grid grid-cols-2 gap-2">
-        {Object.entries(attributes).map(([key, value]) => (
-          <div key={key}>
-            <span className="font-medium">{key.toUpperCase()}: </span>
-            {value}
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-};
 
 const EquipmentSection: React.FC<{ character: { equipment: string[] } }> = ({ character }) => {
   const getEquipmentDetails = (itemId: string) => {
@@ -120,30 +120,20 @@ const SkillDisplay: React.FC<SkillDisplayProps> = ({ skill, character }) => {
     return skill.stats.reduce((sum, statId) => sum + (character.stats[statId] || 0), 0);
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'manoeuvre':
-        return 'bg-green-100 text-green-800';
-      case 'ability':
-        return 'bg-purple-100 text-purple-800';
-      case 'passive':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-blue-100 text-blue-800';
-    }
-  };
-
   return (
-    <div className="border rounded-lg p-3 hover:shadow-sm transition-shadow">
+    <div className="border rounded-lg p-3">
       <div className="flex justify-between items-start mb-2">
         <h4 className="font-medium">{skill.name}</h4>
         <div className="flex gap-2">
           {skill.actionPoints && (
-            <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+            <span className="text-xs px-2 py-1 bg-blue-100 rounded-full">
               {skill.actionPoints} AP
             </span>
           )}
-          <span className={`text-xs px-2 py-1 rounded-full ${getTypeColor(skill.type)}`}>
+          <span className={`text-xs px-2 py-1 rounded-full ${
+            skill.type === 'manoeuvre' ? 'bg-green-100' : 
+            skill.type === 'ability' ? 'bg-purple-100' : 'bg-gray-100'
+          }`}>
             {skill.type.charAt(0).toUpperCase() + skill.type.slice(1)}
           </span>
         </div>
@@ -165,98 +155,31 @@ const SkillDisplay: React.FC<SkillDisplayProps> = ({ skill, character }) => {
   );
 };
 
-interface SkillsSectionProps {
-  character: {
-    stats: {
-      [key: string]: number;
-    };
-    career: string;
-  };
-}
-
-const SkillsSection: React.FC<SkillsSectionProps> = ({ character }) => {
-  const [filterType, setFilterType] = React.useState('all');
-  const [searchTerm, setSearchTerm] = React.useState('');
+const SkillsSection: React.FC<{ character: Character }> = ({ character }) => {
   const career = BASIC_CAREERS.find(c => c.id === character.career);
   const careerSkills = career?.skills?.map(skillId => CAREER_SKILLS[skillId]).filter(Boolean) || [];
 
-  const filterSkills = (skills: any[]) => {
-    return skills.filter(skill => {
-      const matchesType = filterType === 'all' || skill.type === filterType;
-      const matchesSearch = skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           skill.description.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesType && matchesSearch;
-    });
-  };
-
-  const filteredUpstartSkills = filterSkills(UPSTART_SKILLS);
-  const filteredCareerSkills = filterSkills(careerSkills);
-
   return (
     <Card className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="font-bold">Skills</h2>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Search skills..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="px-2 py-1 border rounded text-sm"
-          />
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="px-2 py-1 border rounded text-sm"
-          >
-            <option value="all">All Types</option>
-            <option value="manoeuvre">Manoeuvres</option>
-            <option value="ability">Abilities</option>
-            <option value="passive">Passives</option>
-          </select>
-        </div>
-      </div>
-
+      <h2 className="font-bold mb-4">Skills</h2>
       <div className="space-y-6">
         <div>
-          <h3 className="font-medium mb-3 flex items-center">
-            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mr-2">Upstart</span>
-            Basic Skills
-          </h3>
+          <h3 className="font-medium mb-3">Upstart Skills</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredUpstartSkills.map(skill => (
-              <SkillDisplay
-                key={skill.id}
-                skill={skill}
-                character={character}
-              />
+            {UPSTART_SKILLS.map(skill => (
+              <SkillDisplay key={skill.id} skill={skill} character={character} />
             ))}
           </div>
         </div>
 
-        {career && career.id !== 'upstart' && filteredCareerSkills.length > 0 && (
+        {career && career.id !== 'upstart' && careerSkills.length > 0 && (
           <div>
-            <h3 className="font-medium mb-3 flex items-center">
-              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs mr-2">
-                {career.name}
-              </span>
-              Career Skills
-            </h3>
+            <h3 className="font-medium mb-3">{career.name} Skills</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredCareerSkills.map(skill => (
-                <SkillDisplay
-                  key={skill.id}
-                  skill={skill}
-                  character={character}
-                />
+              {careerSkills.map(skill => skill && (
+                <SkillDisplay key={skill.id} skill={skill} character={character} />
               ))}
             </div>
-          </div>
-        )}
-
-        {filteredUpstartSkills.length === 0 && filteredCareerSkills.length === 0 && (
-          <div className="text-center text-gray-500 py-4">
-            No skills match your search criteria
           </div>
         )}
       </div>
@@ -273,7 +196,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, updateCharac
     <div className="space-y-6">
       <ExportButtons
         character={character}
-        onImport={updateCharacter ?? (() => {})}
+        onImport={updateCharacter ?? ((c: Character) => {})}
       />
       
       <Card className="p-6">

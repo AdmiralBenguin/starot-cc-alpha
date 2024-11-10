@@ -1,20 +1,21 @@
 'use client';
 
-import { jsPDF } from 'jspdf';
+import React from 'react';
 import { Download, Upload } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 import { 
-  STATS,
-  SPECIES,
-  BASIC_CAREERS,
-  UPSTART_SKILLS,
-  CAREER_SKILLS,
+  STATS, 
+  SPECIES, 
+  BASIC_CAREERS, 
+  UPSTART_SKILLS, 
+  CAREER_SKILLS, 
   STARTING_EQUIPMENT,
   type Character 
 } from './starot-types';
 
 interface ExportButtonsProps {
-  character: any;
-  onImport: (character: any) => void;
+  character: Character;
+  onImport: (character: Character) => void;
 }
 
 interface PDFLayout {
@@ -300,7 +301,7 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ character, onImport }) =>
       try {
         const content = e.target?.result;
         if (typeof content === 'string') {
-          const data = JSON.parse(content);
+          const data = JSON.parse(content) as Character;
           onImport(data);
         }
       } catch (error) {
