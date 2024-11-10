@@ -9,10 +9,34 @@ import {
   BASIC_CAREERS, 
   UPSTART_SKILLS, 
   CAREER_SKILLS, 
-  STARTING_EQUIPMENT,
-  TRAINING,
-  type Skill 
+  type Character 
 } from './starot-types';
+
+interface CharacterSheetProps {
+  character: Character;
+  updateCharacter?: (field: keyof Character, value: any) => void;
+}
+
+const StatsSection: React.FC<{ character: Character }> = ({ character }) => (
+  <Card className="p-4">
+    <h2 className="font-bold mb-2">Stats</h2>
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+      {STATS.map(stat => (
+        <div key={stat.id} className="flex justify-between">
+          <span className="font-medium">{stat.name}: </span>
+          <span>
+            {character.stats[stat.id] || 0}
+            {character.levelUpStats?.find(s => s.stat === stat.id) && (
+              <span className="text-green-600 ml-1">
+                (+{character.levelUpStats.find(s => s.stat === stat.id)?.increase})
+              </span>
+            )}
+          </span>
+        </div>
+      ))}
+    </div>
+  </Card>
+);
 
 interface AttributeSectionProps {
   character: {
@@ -44,27 +68,6 @@ const AttributeSection: React.FC<AttributeSectionProps> = ({ character }) => {
     </Card>
   );
 };
-
-const StatsSection: React.FC<AttributeSectionProps> = ({ character }) => (
-  <Card className="p-4">
-    <h2 className="font-bold mb-2">Stats</h2>
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-      {STATS.map(stat => (
-        <div key={stat.id} className="flex justify-between">
-          <span className="font-medium">{stat.name}: </span>
-          <span>
-            {character.stats[stat.id] || 0}
-            {character.levelUpStats?.find(s => s.stat === stat.id) && (
-              <span className="text-green-600 ml-1">
-                (+{character.levelUpStats.find(s => s.stat === stat.id)?.increase})
-              </span>
-            )}
-          </span>
-        </div>
-      ))}
-    </div>
-  </Card>
-);
 
 const EquipmentSection: React.FC<{ character: { equipment: string[] } }> = ({ character }) => {
   const getEquipmentDetails = (itemId: string) => {
@@ -259,29 +262,10 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ character }) => {
   );
 };
 
-interface CharacterSheetProps {
-  character: {
-    name: string;
-    species: string;
-    isNewsoul: boolean;
-    stats: {
-      [key: string]: number;
-    };
-    equipment: string[];
-    training: string;
-    career: string;
-    levelUpStats: Array<{
-      stat: string;
-      increase: number;
-    }>;
-  };
-  updateCharacter?: (character: any) => void;
-}
-
 const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, updateCharacter }) => {
   const species = SPECIES.find(s => s.id === character.species);
-  const training = TRAINING.find(t => t.id === character.training);
   const career = BASIC_CAREERS.find(c => c.id === character.career);
+  const training = TRAINING.find(t => t.id === character.training);
   
   return (
     <div className="space-y-6">

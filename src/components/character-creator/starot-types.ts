@@ -21,9 +21,10 @@ export interface Character {
   equipment: string[];
   training: string;
   career: string;
-  levelUpStats: Array<{
+  levelUpStats?: Array<{
     stat: string;
     increase: number;
+    id?: string;  // Optional id field
   }>;
 }
 
