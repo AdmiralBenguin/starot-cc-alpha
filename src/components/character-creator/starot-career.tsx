@@ -248,7 +248,7 @@ const CareerStep: React.FC<CareerStepProps> = ({ character, updateCharacter }) =
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Your current choices don't meet the requirements for any basic careers.
+                  Your current choices do not meet the requirements for any basic careers.
                   Consider adjusting your equipment or training selections.
                 </AlertDescription>
               </Alert>
